@@ -1,16 +1,6 @@
-# Simulation of the fractional coalescent with two populations {#simulation-of-the-fractional-coalescent-with-two-populations .unnumbered}
+# Simulation of the fractional coalescent with two populations
 
-The simulation code `simtree.py` will be available in our private GitHub
-\[address need to be inserted\]. Here, a few examples of the output are
-shown. The key code is given in the snippet in Figure
-[1](#fig1){reference-type="ref" reference="fig1"}. Figure
-[2](#fig2){reference-type="ref" reference="fig2"} gives examples for two
-populations with different $\alpha$, all histograms were drawn from 5000
-independent replicates using the same effective population sizes
-($\Theta_1=0.01$,$\Theta_2=0.01$) and immigration rates
-($M_{2\rightarrow1}=100$, $M_{1\rightarrow2}=100$), but different
-$\alpha$. Each histogram is compared with the standard Kingman
-coalescent.
+The simulation code `simtree.py` will be available in our public GitHub. Here, a few examples of the output are shown. The key code is given in the snippet in Figure [1](#fig1). Figure [2](#fig2) gives examples for two populations with different $\alpha$, all histograms were drawn from 5000 independent replicates using the same effective population sizes ($\Theta_1=0.01$,$\Theta_2=0.01$) and immigration rates ($M_{2\rightarrow1}=100$, $M_{1\rightarrow2}=100$), but different $\alpha$. Each histogram is compared with the standard Kingman coalescent.
 
 <figure id="fig1">
 <div class="sourceCode" id="cb1"><pre
@@ -45,12 +35,12 @@ class="math inline"><em>α</em></span> per population.</figcaption>
 </figure>
 
 <figure id="fig2">
-<p><img src="simtree-0.999-0.999" style="width:32.0%" alt="image" />
-<img src="simtree-0.999-0.9" style="width:32.0%" alt="image" /> <img
-src="simtree-0.999-0.7" style="width:32.0%" alt="image" /><br />
-<img src="simtree-0.9-0.9" style="width:32.0%" alt="image" /> <img
-src="simtree-0.9-0.999" style="width:32.0%" alt="image" /> <img
-src="simtree-0.7-0.999" style="width:32.0%" alt="image" /></p>
+<p><img src="simtree-0.999-0.999.pdf" style="width:32.0%" alt="image" />
+<img src="simtree-0.999-0.9.pdf" style="width:32.0%" alt="image" /> <img
+src="simtree-0.999-0.7.pdf" style="width:32.0%" alt="image" /><br />
+<img src="simtree-0.9-0.9.pdf" style="width:32.0%" alt="image" /> <img
+src="simtree-0.9-0.999.pdf" style="width:32.0%" alt="image" /> <img
+src="simtree-0.7-0.999.pdf" style="width:32.0%" alt="image" /></p>
 <figcaption>Comparison of six different scenarios for two populations
 with different <span class="math inline"><em>α</em></span>: top left:
 both populations are essentially following the Kingman coalescent; top
