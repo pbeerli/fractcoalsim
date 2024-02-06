@@ -1,0 +1,15 @@
+the simtree.pdf is the result of running simtree.tex
+to check the pyton code run:
+python simtree.py -h
+
+an example run with plot is:
+python simtree.py -i 10,10 -l 5000  -t 0.01,0.01 -m 100,100 -a 0.95,0.9 -p   
+
+
+the code below was used the create the histograms
+python simtree.py -i 10,10 -l 5000  -t 0.01,0.01 -m 100,100 -a 0.999,0.999 -p; mv simtreefig.pdf simtree-0.999-0.999.pdf   
+python simtree.py -i 10,10 -l 5000  -t 0.01,0.01 -m 100,100 -a 0.9,0.9 -p; mv simtreefig.pdf simtree-0.9-0.9.pdf   
+python simtree.py -i 10,10 -l 5000  -t 0.01,0.01 -m 100,100 -a 0.9,0.999 -p; mv simtreefig.pdf simtree-0.9-0.999.pdf   
+python simtree.py -i 10,10 -l 5000  -t 0.01,0.01 -m 100,100 -a 0.999,0.9 -p; mv simtreefig.pdf simtree-0.999-0.9.pdf   
+python simtree.py -i 10,10 -l 5000  -t 0.01,0.01 -m 100,100 -a 0.999,0.7 -p; mv simtreefig.pdf simtree-0.999-0.7.pdf   
+python simtree.py -i 10,10 -l 5000  -t 0.01,0.01 -m 100,100 -a 0.7,0.999 -p; mv simtreefig.pdf simtree-0.7-0.999.pdf   
