@@ -4,11 +4,13 @@
 # @Author  : Peter Beerli
 # @Site    : Tallahassee, Florida, USA
 import os
+import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 from numba import jit
-plt.rcParams['text.usetex'] = True
-
+#plt.rcParams['text.usetex'] = True
+matplotlib.rcParams['pdf.fonttype'] = 42
+matplotlib.rcParams['ps.fonttype'] = 42
 import tree
 #import numpy.ma as ma
 
@@ -23,6 +25,7 @@ def pick_two_lineages(population,pop,kpop):
 
 def pick_one_lineage(population, pop):
     x = [i for i in range(len(population)) if population[i].pop == pop]
+    print("$$",pop,":",x)
     i = np.random.choice(x, size=1, replace=False)
     return i
 
@@ -61,7 +64,7 @@ def mylambda(theta,M,k,alphas):
     #else:
     #    alphas = np.array(alpha,dtype=np.float64)     
     l = fill_mygammas(alphas)
-    print("gammas:",np.exp(l))
+    #print("gammas:",np.exp(l))
     xlambdas = np.zeros(npop2)
     for i in range(npop):
         if k[i]> 1:
@@ -72,7 +75,7 @@ def mylambda(theta,M,k,alphas):
     for i in range(npop):
         for j in range(npop): 
             if i != j:
-                xlambdas[z] = M[j]*k[i]
+                xlambdas[z] = M[j,i]*k[i]
                 z += 1  
     Y = xlambdas*np.exp(l)
     print("k:",k)
@@ -145,14 +148,19 @@ def randommlftime(mylambda, alpha):
     denomlambda = 1.0 / mylambda
     return -denomlambda**denoma * (np.sin(pia)/(np.tan(pia*(1.0-r1)))-np.cos(pia))**denoma * np.log(r2)
 
-@jit(nopython=True)
+#@jit(nopython=True)
 def randomtime(Y,alphas,t0):
     smallu = 1e100
-    for yi,ai in zip(Y,alphas):
+    rz = -1
+    print("randomtime",end=' ')
+    for zi,yi,ai in zip(range(0,len(alphas)),Y,alphas):
         u = randommlftime(yi,ai)
+        print(u,end=' ')
         if u < smallu:
             smallu = u
-    return t0 + smallu
+            rz = zi
+    print('@',t0+smallu,rz)
+    return t0 + smallu, rz
 
 #@jit(nopython=True)
 def kingmanrandomtime(Y,t0):
@@ -187,11 +195,15 @@ def mm2m(i,numpop):
             frompop += 1;
         return int(frompop),int(topop)
 
-def pick_event(lambdas):
-    s = np.sum(lambdas)
-    x = lambdas/s
-    print(x)
-    return np.random.choice(range(len(lambdas)), p=x)
+def pick_event(lambdas, zi):
+    if zi>=0:
+        print("event:",zi)
+        return zi
+    else:
+        s = np.sum(lambdas)
+        x = lambdas/s
+        #print(x)
+        return np.random.choice(range(len(lambdas)), p=x)
 
     
 import sys 
@@ -203,14 +215,14 @@ def sim_one(ne,M,savek,alpha,numpop):
     k = savek.copy()
     count = 0
     otmin=0.0
-    mytimes=np.zeros(100000)
-    while np.sum(k)>1 and count < 100000:
+    mytimes=np.zeros(LARGE)
+    while np.sum(k)>1 and count < LARGE:
         count += 1
         Y,debuglambdas,debugl = mylambda(ne,M,k,alpha)
         Yalphas = fill_Yalphas(alpha)
         if DEBUG:
-            print(k, Y, debuglambdas,np.exp(debugl),file=sys.stderr)
-        t1 = randomtime(Y,Yalphas, otmin)
+            print("##", k, Y, debuglambdas,np.exp(debugl),file=sys.stderr)
+        t1, rz = randomtime(Y,Yalphas, otmin)
         #print("time choices:", t1,end=' | ')
         #mini = np.argmin(t1)
         #tmin = t1[mini]
@@ -218,26 +230,29 @@ def sim_one(ne,M,savek,alpha,numpop):
         u = tmin - otmin
         mytimes[count] = u
         otmin = tmin
-        mini=pick_event(debuglambdas)
+        mini=pick_event(debuglambdas, rz)
         print("index:",mini, "time:",tmin, "interval:",u)
         frompop, topop = mm2m(mini,numpop)
         if frompop == topop:
-            #print(populations[frompop])
+            print("f==t",frompop, populations[frompop])
             if k[frompop] < 2:
                 #print("k[frompop] < 2")
                 break
             l1,l2 = pick_two_lineages(populations,frompop,k[frompop])
-            #print("pick:",frompop,"::", l1,l2)
+            print("pick-two-lineages:",frompop,topop,"::", l1,l2)
             populations = connect_lineages(populations,l1,l2, tmin)
             k[frompop] -= 1
         else:
+            #try:
             l1 = pick_one_lineage(populations,topop)[0]
-            #print("pick2:",topop,"::", l1)
+            #except:
+            #    break
+            print("pick-one-lineage:",frompop, topop,"::", l1)
             populations[l1].pop = frompop              
             k[topop] -= 1
             k[frompop] += 1   
         #print(f"{tmin} {frompop} :: {k}  {[i.pop for i in populations]}")
-    return populations  
+    return populations,count  
 
 #@jit(nopython=True)
 def run_sim(nrun, ne,M,k,alpha,alpha2):
@@ -245,8 +260,10 @@ def run_sim(nrun, ne,M,k,alpha,alpha2):
     simtimes=np.zeros(nrun)
     simtimes2=np.zeros(nrun)
     for i in np.arange(0,nrun): 
-        simtimes[i] = np.sum(sim_one(ne,M,k,alpha,numpop))
-        simtimes2[i] = np.sum(sim_one(ne,M,k,alpha2,numpop))
+        simtimes[i],count = np.sum(sim_one(ne,M,k,alpha,numpop))
+        simtimes2[i],count2 = np.sum(sim_one(ne,M,k,alpha2,numpop))
+        if count>=LARGE or count2>=LARGE:
+            sys.exit(f'Did not coalesce within {LARGE} time steps')
     return simtimes,simtimes2
 
 def report_stats(simtimes, loci, title=''):
@@ -261,12 +278,18 @@ import argparse as ap
 
 if __name__ == '__main__':
     DEBUG = False
+    LARGE = 100000
     parser = ap.ArgumentParser(description='Simulate a tree')
     parser.add_argument('-l', '--loci', type=int, default=1, help='number of loci')
     parser.add_argument('-s', '--sites', type=int, default=1000, help='number of sites')
     parser.add_argument('-i', '--individuals', type=str, default="10,10", help='Number of samples for each population')    
     parser.add_argument('-t', '--theta', type=str, default="0.01,0.01", help='thetas for each population')    
-    parser.add_argument('-m', '--mig', type=str, default="100,100", help='migration rate for each population')
+    parser.add_argument('-m', '--mig', type=str, default="0,100,100,0",
+                        help='''immigration rate matrix
+                        the diagonal values are ignored so for two population specify: 0,100,100,0;
+                        for 3 populations stepping stone: 0,100, 0,0,0,100,0,0,0, this is from 3->2->1;
+                        there need to be n*n values!
+                        ''')
     parser.add_argument('-a', '--alpha', type=str, default="1.0,1.0", help='alpha for each population')
     parser.add_argument('-f', '--file', type=str, default="NONE", help='treefile to be used with migdata, default is NONE which is a placeholder for sys.stdout')
     parser.add_argument('-p', '--plot', action='store_true', help='Plots density histogram of TMRCA')
@@ -279,11 +302,18 @@ if __name__ == '__main__':
     #[10,10]
     ne = [float(ki) for ki in args.theta.split(',')]   
     #np.array([0.01,0.01]) 
-    M = [float(ki) for ki in args.mig.split(',')]       
-    #np.array([100.,100.])
+    M = [float(ki) for ki in args.mig.split(',')]
+    numpop = len(ne)
+    if numpop > 1 and len(M) != numpop*numpop:
+        print(f"ERROR: you need to specify {numpop*numpop} values in the -m option")
+        sys.exit()
+    M = np.array(M)
+    M = np.reshape(M, (numpop, numpop))
+    print(M)
+    #np.array([0,100.,100.,0])
     alpha = [float(ki) for ki in args.alpha.split(',')]   
     #np.array([0.9,0.9])
-    alpha2 = np.array([1.0,1.0])
+    alpha2 = np.array([1.0]*len(alpha))
     if myfile == 'NONE':
         thetree = sys.stdout 
     else:
@@ -291,18 +321,19 @@ if __name__ == '__main__':
     nl=os.linesep
     simtimes=[] 
     simtimes2=[] 
-    r = np.random.randint(1000000)
-    thetree.write(f"#SN{nl}#{r}{nl}#2{nl}#{k[0]} {k[1]}{nl}#{loci} {sites} 2.0{nl}")
+    r = np.random.randint(1000000) # generates random number seed for migdata
+    kkstr = " ".join(map(str,k))
+    thetree.write(f"#SN{nl}#{r}{nl}#{len(ne)}{nl}#{kkstr}{nl}#{loci} {sites} 2.0{nl}")
     for locus in range(loci):
         thetree.write(f"# rate among sites for locus 0 (1.000000){nl}#={nl}")
 
     for locus in range(loci):
         thetree.write(f"#$ locus {locus}{nl}#$ 0.000001{nl}")
-        root = sim_one(ne,M,k,alpha,2)
+        root, count = sim_one(ne,M,k,alpha,numpop)
         if plot:
-            root2 = sim_one(ne,M,k,alpha2,2)
+            root2, count2 = sim_one(ne,M,k,alpha2,numpop)
             simtimes2.append((root2[0].age))
-        #print(root)
+        print(root)
         t = tree.Tree()
         t.root = root[0]
         simtimes.append((root[0].age))
@@ -317,8 +348,11 @@ if __name__ == '__main__':
     if plot:
         report_stats(simtimes2,loci,f'{alpha2}')  
         plt.hist(simtimes, bins=50,color='blue', histtype='step', density=True, alpha=0.6, label=r'$\alpha=$'+f'{alpha}')
-        plt.hist(simtimes2, bins=50, density=True, alpha=0.6, color='red',histtype='step', label=r'$\alpha=1.0$')
-        plt.legend(loc='upper right')
+        plt.hist(simtimes2, bins=50, density=True, alpha=0.6, color='red',histtype='step', label=r'$\alpha=[1.0, 1.0]$')
+        plt.legend(loc='upper right',frameon=False)
+        plt.text(0.09,65.0,f'$\Theta={ne}$')
+        MM=[int(M[0,1]),int(M[1,0])]
+        plt.text(0.09,60.0,f'$M={MM}$')
         plt.xlim(0,0.12)
         plt.ylim(0,80.0)
         plt.xlabel('Time to MRCA')

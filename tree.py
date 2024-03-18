@@ -201,7 +201,7 @@ class Node:
         elif self.age >= 0.0 and self.ancestor != -1:
             #print(self.ancestor)
             self.blength = self.ancestor.age - self.age    
-            print (":%s" % str(self.blength),end='',file=file)
+            print (f":{self.blength:10.20f}",end='',file=file)
 
 
     def debugprint(self):

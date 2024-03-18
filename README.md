@@ -51,33 +51,32 @@ that the <span class="math inline"><em>α</em></span> are
 reversed.</figcaption>
 </figure>
 
-::: samepage
-The script has several options:
-
-    usage: simtree.py [-h] [-l LOCI] 
-                                        [-s SITES] 
-                                        [-i INDIVIDUALS] 
-                                        [-t THETA]
-                                         [-m MIG] 
-                                         [-a ALPHA] 
-                                         [-f FILE] 
-                                         [-p]
+    
+    usage: simtree.py [-h] [-l LOCI] [-s SITES] [-i INDIVIDUALS] [-t THETA] [-m MIG]
+                  [-a ALPHA] [-f FILE] [-p]
 
     Simulate a tree
 
-    optional arguments:
-      -h, --help            show this help message and exit
-      -l LOCI, --loci LOCI  number of loci
-      -s SITES, --sites SITES
-                            number of sites
-      -i INDIVIDUALS, --individuals INDIVIDUALS
-                            Number of samples for each population
-      -t THETA, --theta THETA
-                            thetas for each population
-      -m MIG, --mig MIG     migration rate for each population
-      -a ALPHA, --alpha ALPHA
-                            alpha for each population
-      -f FILE, --file FILE  treefile to be used with migdata, default is NONE 
-                                                which is a placeholder for sys.stdout
-      -p, --plot            Plots density histogram of TMRCA
-:::
+    options:
+    -h, --help            show this help message and exit
+    -l LOCI, --loci LOCI  number of loci
+    -s SITES, --sites SITES
+                        number of sites
+    -i INDIVIDUALS, --individuals INDIVIDUALS
+                        Number of samples for each  population
+    -t THETA, --theta THETA
+                        thetas for each population
+    -m MIG, --mig MIG     immigration rate matrix the diagonal values are ignored
+                        so for two population specify: 0,100,100,0; for 3
+                        populations stepping stone: 0,100, 0,0,0,100,0,0,0, this
+                        is from 3->2->1; there need to be n*n values!
+    -a ALPHA, --alpha ALPHA
+                        alpha for each population
+    -f FILE, --file FILE  treefile to be used with migdata, default is NONE which
+                        is a placeholder for sys.stdout
+    -p, --plot            Plots density histogram of TMRCA
+
+    Example: 3 populations with stepping stone migration one-way from 3->2->1 all with alpha=0.9
+
+
+    python simtree.py -i 5,5,5 -l 2 -t 0.01,0.01,0.01 -m 0,1,0,0,0,1,0,0,0  -a 0.9,0.9,0.9 -f test.tre
