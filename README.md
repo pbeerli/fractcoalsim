@@ -50,34 +50,35 @@ bottom middle and right: Same scenario as ‘top middle and right’ except
 that the <span class="math inline"><em>α</em></span> are
 reversed.</figcaption>
 </figure>
-usage: simtree.py [-h] [-ID ID] [-l LOCI] [-s SITES] [-i INDIVIDUALS]
+	usage: simtree.py [-h] [-ID ID] [-l LOCI] [-s SITES] [-i INDIVIDUALS]
                   [-t THETA] [-m MIG] [-a ALPHA] [-f FILE] [-p] [-j]
                   [-d DATEFILE] [-wd WRITEDATEFILE]
 
-Simulate a tree
+	Simulate a tree
 
-options:
-  -h, --help            show this help message and exit
-  -ID ID, --ID ID       ID number start, each locus will add +1
-  -l LOCI, --loci LOCI  number of loci
-  -s SITES, --sites SITES
-                        number of sites
-  -i INDIVIDUALS, --individuals INDIVIDUALS
-                        Number of samples for each population
-  -t THETA, --theta THETA
-                        thetas for each population
-  -m MIG, --mig MIG     migration rate for each population
-  -a ALPHA, --alpha ALPHA
-                        alpha for each population
-  -f FILE, --file FILE  treefile to be used with migdata, default is NONE
-                        which is a placeholder for sys.stdout
-  -p, --plot            Plots density histogram of TMRCA
-  -j, --json            uses a json output style
-  -d DATEFILE, --datefile DATEFILE
-                        allows for dated samples in file: time sample1 sample2
-                        [units: theta]
-  -wd WRITEDATEFILE, --writedatefile WRITEDATEFILE
-                        write datefile for migrate
+	options:
+  		-h, --help            show this help message and exit
+  		-ID ID, --ID ID       ID number start, each locus will add +1
+  		-l LOCI, --loci LOCI  number of loci
+  		-s SITES, --sites SITES
+       	                   number of sites
+  		-i INDIVIDUALS, --individuals INDIVIDUALS
+                        	  Number of samples for each population
+  		-t THETA, --theta THETA
+       	                  thetas for each population
+  		-m MIG, --mig MIG    migration rate for each population
+  		-a ALPHA, --alpha ALPHA
+       	                  alpha for each population
+  		-f FILE,-- file FILE  treefile to be used with migdata, default is NONE
+                  		     which is a placeholder for sys.stdout
+  		-p, --plot            Plots density histogram of TMRCA
+  		-j, --json            uses a json output style
+  		-d DATEFILE, --datefile DATEFILE
+             		            allows for dated samples in file: 
+                        		time sample1 sample2
+                           [units: theta]
+  		-wd WRITEDATEFILE, --writedatefile WRITEDATEFILE
+       	                 write datefile for migrate
 
   Example: 3 populations with stepping stone migration one-way from 3->2->1 all with alpha=0.9
 
