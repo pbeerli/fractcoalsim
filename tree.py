@@ -197,11 +197,12 @@ class Node:
         if(self.name!="" and self.name!='root'):
             print (self.name,end='',file=file)
         if(self.blength != -1):
-            print (":%s" % str(self.blength),end='',file=file)
+            print (f":{self.blength:.20f}",end='',file=file)
         elif self.age >= 0.0 and self.ancestor != -1:
             #print(self.ancestor)
             self.blength = self.ancestor.age - self.age    
-            print (f":{self.blength:10.20f}",end='',file=file)
+            #print (":%s" % str(self.blength),end='',file=file)
+            print (f":{self.blength:.20f}",end='',file=file)
 
 
     def debugprint(self):
@@ -564,6 +565,7 @@ class Tree(Node):
             if path1[i] != path2[i]:
                 break
             i += 1
+            #print(i,path1[i])
             sum[i]= sum[i-1]+(path1[i]).blength
         return(i-1, sum[i-1])
 
@@ -585,6 +587,7 @@ class Tree(Node):
         tips=[]
         tipslength=[]
         p = self.root
+        mytree = self
         mytree.myread(newick,p)
         tips, tipslength = mytree.getTips(p, tips, tipslength)
         tipsandlength = list(zip(tips, tipslength))
@@ -685,7 +688,8 @@ def generate_treelist(filename, dt):
     Likelihood=Likelihood[1:]
     num=int(len(data)/2)
     data = data[num:]
-    print("length  of origional file = ", len(data))      #length  of data= 78626
+    if DEBUG:
+        print("length  of origional file = ", len(data))      #length  of data= 78626
 
     idx=np.arange(0,len(data),dt)
     treelist = [data[i].strip() for i in idx]

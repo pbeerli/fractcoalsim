@@ -1,4 +1,4 @@
-# Simulation of the fractional coalescent with two populations
+Simulation of the fractional coalescent with one or more populations
 
 The simulation code `simtree.py` will be available in our public GitHub. Here, a few examples of the output are shown. The key code is given in the snippet in Figure [1](#fig1). Figure [2](#fig2) gives examples for two populations with different $\alpha$, all histograms were drawn from 5000 independent replicates using the same effective population sizes ($\Theta_1=0.01$,$\Theta_2=0.01$) and immigration rates ($M_{2\rightarrow1}=100$, $M_{1\rightarrow2}=100$), but different $\alpha$. Each histogram is compared with the standard Kingman coalescent.
 
@@ -50,33 +50,35 @@ bottom middle and right: Same scenario as ‘top middle and right’ except
 that the <span class="math inline"><em>α</em></span> are
 reversed.</figcaption>
 </figure>
+usage: simtree.py [-h] [-ID ID] [-l LOCI] [-s SITES] [-i INDIVIDUALS]
+                  [-t THETA] [-m MIG] [-a ALPHA] [-f FILE] [-p] [-j]
+                  [-d DATEFILE] [-wd WRITEDATEFILE]
 
-    
-    usage: simtree.py [-h] [-l LOCI] [-s SITES] [-i INDIVIDUALS] [-t THETA] [-m MIG]
-                  [-a ALPHA] [-f FILE] [-p]
+Simulate a tree
 
-    Simulate a tree
-
-    options:
-    -h, --help            show this help message and exit
-    -l LOCI, --loci LOCI  number of loci
-    -s SITES, --sites SITES
+options:
+  -h, --help            show this help message and exit
+  -ID ID, --ID ID       ID number start, each locus will add +1
+  -l LOCI, --loci LOCI  number of loci
+  -s SITES, --sites SITES
                         number of sites
-    -i INDIVIDUALS, --individuals INDIVIDUALS
-                        Number of samples for each  population
-    -t THETA, --theta THETA
+  -i INDIVIDUALS, --individuals INDIVIDUALS
+                        Number of samples for each population
+  -t THETA, --theta THETA
                         thetas for each population
-    -m MIG, --mig MIG     immigration rate matrix the diagonal values are ignored
-                        so for two population specify: 0,100,100,0; for 3
-                        populations stepping stone: 0,100, 0,0,0,100,0,0,0, this
-                        is from 3->2->1; there need to be n*n values!
-    -a ALPHA, --alpha ALPHA
+  -m MIG, --mig MIG     migration rate for each population
+  -a ALPHA, --alpha ALPHA
                         alpha for each population
-    -f FILE, --file FILE  treefile to be used with migdata, default is NONE which
-                        is a placeholder for sys.stdout
-    -p, --plot            Plots density histogram of TMRCA
+  -f FILE, --file FILE  treefile to be used with migdata, default is NONE
+                        which is a placeholder for sys.stdout
+  -p, --plot            Plots density histogram of TMRCA
+  -j, --json            uses a json output style
+  -d DATEFILE, --datefile DATEFILE
+                        allows for dated samples in file: time sample1 sample2
+                        [units: theta]
+  -wd WRITEDATEFILE, --writedatefile WRITEDATEFILE
+                        write datefile for migrate
 
-    Example: 3 populations with stepping stone migration one-way from 3->2->1 all with alpha=0.9
+  Example: 3 populations with stepping stone migration one-way from 3->2->1 all with alpha=0.9
 
-
-    python simtree.py -i 5,5,5 -l 2 -t 0.01,0.01,0.01 -m 0,1,0,0,0,1,0,0,0  -a 0.9,0.9,0.9 -f test.tre
+    python simtree.py -i 5,5,5 -l 2 -t 0.01,0.01,0.01 -m 0,10,0,0,0,10,0,0,0  -a 0.9,0.9,0.9 -f test.tre
