@@ -8,7 +8,17 @@
 #
 # added JSON for machine learning training
 # added dating of samples
-# 
+#
+# updated  early August 2025: fixed and error that lead to
+# short time intervals: the error was a logic problem:
+# 1. pick smallest time for all individual events (coalescence, migrations)
+# 2. pick event by calculating CDF for events and choose one according to
+#    the probability -- then assign that event
+# (this lead to an error of a factor 4x shorter time intervals
+# now fixed:
+# 1. pick smallest time for all individual events and record which event
+#    is associated with the smallest event.f
+# 2. assign event
 import os
 import io
 import json as jason
@@ -48,8 +58,7 @@ def setup_population(samples):
             xx.name = str(pop) + '_' + str(i)
             xx.age = 0.0
             populations.append(xx)
-    if DEBUG:
-        print(populations)
+    print(populations)
     return populations   
 
 def add_samples(age, populations, k, newsamples):
@@ -82,15 +91,14 @@ def connect_lineages(population, i, j, age ):
     return population
 
 #@jit(nopython=True)
-def mylambda(theta,M,k,alphas):
-    #print("mylambda", M)
+def mylambda(theta,M,k,alphas):    
     npop = len(theta)
     npop2 = npop**2
     #if alpha==None:
     #    alphas = np.ones(npop)
     #else:
     #    alphas = np.array(alpha,dtype=np.float64)     
-    l = fill_mygammas(alphas)
+    L = fill_mygammas(alphas)
     #print("gammas:",np.exp(l))
     xlambdas = np.zeros(npop2)
     for i in range(npop):
@@ -99,19 +107,16 @@ def mylambda(theta,M,k,alphas):
         else:
             xlambdas[i] = 0.0
     z = npop
-    #print("2@@@@", M)
     for i in range(npop):
         for j in range(npop): 
             if i != j:
-                #print(i,j,M)
-                xlambdas[z] = M[j][i]*k[i]
+                xlambdas[z] = M[j]*k[i]
                 z += 1
-    Y = xlambdas*np.exp(l)
-    #sys.exit()
+    Y = xlambdas*np.exp(L)
     #print("k:",k)
     #print("xlambdas:",xlambdas)
     #print("Y:",Y)
-    return Y,xlambdas,l
+    return Y,xlambdas,L
 
 
 
@@ -181,21 +186,24 @@ def randommlftime(mylambda, alpha):
 #@jit(nopython=True)
 def randomtime(Y,alphas,t0):
     smallu = 1e100
-    for yi,ai in zip(Y,alphas):
+    smalli = -1
+    for i,yi,ai in zip(range(len(Y)),Y,alphas):
         u = randommlftime(yi,ai)
+        #print(f"{u=} kingman:{kingmanrandomtime(Y,t0)} {yi=} {ai=}")
         if u < smallu:
             smallu = u
-    return t0 + smallu
+            smalli = i
+    return t0 + smallu, smalli
 
 #@jit(nopython=True)
 def kingmanrandomtime(Y,t0):
     #lY = len(Y)
-    Y = np.sum(Y)
+    kY = np.sum(Y)
     #Y = Y + 1e-10
     
     #u =  (np.log(Y) - np.log(np.random.uniform(0,1,lY)))/Y 
     #u =  ( - np.log(np.random.uniform(0,1,lY)))/Y
-    u =  ( - np.log(np.random.uniform(0,1)))/Y 
+    u =  ( - np.log(np.random.uniform(0,1)))/kY 
     #u[u<=0] = 1000000
     return t0 + u
 
@@ -231,7 +239,6 @@ import sys
 #@jit(nopython=True)
 def sim_one(ne,M,savek,alpha,numpop,sampledates):
     global fullk
-    #print("simone",M)
     populations = setup_population(savek)
     age = 0.0
     k = savek.copy()
@@ -242,7 +249,7 @@ def sim_one(ne,M,savek,alpha,numpop,sampledates):
         count += 1
         Y,debuglambdas,debugl = mylambda(ne,M,k,alpha)
         Yalphas = fill_Yalphas(alpha)
-        t1 = randomtime(Y,Yalphas, age)
+        t1, which = randomtime(Y,Yalphas, age)
         #if DEBUG:
         #print("@", count, age, t1,k, Y, debuglambdas,np.exp(debugl),file=sys.stderr)
         if len(sampledates)>0 and t1 > sampledates[0][0]:
@@ -271,7 +278,7 @@ def sim_one(ne,M,savek,alpha,numpop,sampledates):
         #########mytimes[count] = age
         #otmin = tmin
         #otmin = age
-        mini=pick_event(debuglambdas)
+        mini=which #pick_event(debuglambdas)
         #print("index:",mini, "time:",tmin, "interval:",u)
         frompop, topop = mm2m(mini,numpop)
         if frompop == topop:
@@ -289,8 +296,7 @@ def sim_one(ne,M,savek,alpha,numpop,sampledates):
             populations[l1].pop = frompop              
             k[topop] -= 1
             k[frompop] += 1   
-        if DEBUG:
-            print(f"{age} {u} {age-u} {frompop} :: {k}  {[i.pop for i in populations]}")
+        print(f"{age} {u} {age-u} {frompop} :: {k}  {[i.pop for i in populations]}")
     if len(sampledates)>0:
         print(f"WARNING: not all sampledates are used: remaining {sampledates=}")
         for s in sampledates:
@@ -317,18 +323,14 @@ def report_stats(simtimes, loci, title=''):
     print("TMRCA:min,max = ",np.min(simtimes),np.max(simtimes))   
     print("Loci          = ",loci)
 
-def partition(lst, size):
-    return [lst[start:start+npop] for start in range(0,len(lst),size)]
-    #for i in range(0, len(lst) // size):
-    #    yield lst[i :: size]
-    
+
 import argparse as ap
 
 if __name__ == '__main__':
     DEBUG = False
     LARGE = 100000    
     parser = ap.ArgumentParser(description='Simulate a tree')
-    parser.add_argument('-ID', '--ID', type=int, default=1, help='ID number start, each locus will add +1')
+    parser.add_argument('-id', '--ID', type=int, default=1, help='ID number start, each locus will add +1')
     parser.add_argument('-l', '--loci', type=int, default=1, help='number of loci')
     parser.add_argument('-s', '--sites', type=int, default=1000, help='number of sites')
     parser.add_argument('-i', '--individuals', type=str, default="10,10", help='Number of samples for each population')    
@@ -366,20 +368,18 @@ if __name__ == '__main__':
     k=[int(ki) for ki in args.individuals.split(',')]
     if sampledates!=[] and sampledates[0][0] == 0.0:
         k = sampledates.pop(0)[1]
-    #print(k)
+    print(k)
     fullk = np.array(k)
     for s in sampledates:    
         fullk += np.array(s[1])
-    #print(f"{k=}")
-    #print(f"{fullk=}")
+    print(f"{k=}")
+    print(f"{fullk=}")
     #[10,10]
     ne = [float(ki) for ki in args.theta.split(',')]
     npop = len(ne)
     #np.array([0.01,0.01]) 
     M = [float(ki) for ki in args.mig.split(',')]
-    #print(M)
-    M = list(partition(M,npop))
-    #print(f"@@@@@@@@@@@@@{M=}")
+    print(f"{M=}")
     #np.array([0,100.,100.,0])
     alpha = [float(ki) for ki in args.alpha.split(',')]   
     #np.array([0.9,0.9])
@@ -403,7 +403,6 @@ if __name__ == '__main__':
     for locus in range(loci):
         if not json:
             thetree.write(f"#$ locus {locus}{nl}#$ 0.000001{nl}")
-        #print('before simone', M)
         root = sim_one(ne,M,k,alpha, npop,sampledates)
         if plot:
             root2 = sim_one(ne,M,k,alpha2,2,sampledates)
@@ -430,8 +429,8 @@ if __name__ == '__main__':
             tips = []
             tipslength = []
             a = mmt.MetricsVectors(newick, tips, tipslength, pairlist)
-            Mshort = [M[j][i] for i in range(npop) for j in range(npop) if i!=j ]
-            xxx = [ne, Mshort, alpha]
+            
+            xxx = [ne, M, alpha]
             if npop==1:
                 xxx = [ ne ]
             jsondata = {
@@ -439,6 +438,8 @@ if __name__ == '__main__':
                 "params" : xxx,
                 "M": a[0],
                 "m": a[1],
+                "age" : a[2],
+                "inter" : a[3],
                 "tree" : newick
             }
             ID += 1
