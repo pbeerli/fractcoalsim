@@ -29,7 +29,7 @@ class="sourceCode python"><code class="sourceCode python"><span id="cb1-1"><a hr
 <span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> u <span class="op">&lt;</span> smallu:</span>
 <span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>            smallu <span class="op">=</span> u</span>
 <span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> t0 <span class="op">+</span> smallu</span></code></pre></div>
-<figcaption>Key python function to draw new event times using the
+<figcaption>Fig 1: Key Python function to draw new event times using the
 fractional coalescent with different <span
 class="math inline"><em>α</em></span> per population.</figcaption>
 </figure>
@@ -41,7 +41,7 @@ src="simtree-0.999-0.7.pdf" style="width:32.0%" alt="image" /><br />
 <img src="simtree-0.9-0.9.pdf" style="width:32.0%" alt="image" /> <img
 src="simtree-0.9-0.999.pdf" style="width:32.0%" alt="image" /> <img
 src="simtree-0.7-0.999.pdf" style="width:32.0%" alt="image" /></p>
-<figcaption>Comparison of six different scenarios for two populations
+<figcaption>Fig 2: [if the graphs do not show, click on them [github does not display PDFs for README.md files :( ] Comparison of six different scenarios for two populations
 with different <span class="math inline"><em>α</em></span>: top left:
 both populations are essentially following the Kingman coalescent; top
 middle and right: one population deviates from the Kingman coalescent;
