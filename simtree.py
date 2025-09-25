@@ -407,22 +407,21 @@ if __name__ == '__main__':
         if plot:
             root2 = sim_one(ne,M,k,alpha2,2,sampledates)
             simtimes2.append((root2[0].age))
-        #print(root)
-        t = tree.Tree()
-        t.root = root[0]
+        t = tree.Tree(root[0])
         simtimes.append((root[0].age))
-
+        tree.compute_blengths_from_ages(t.root)
+        t.set_age()
         if writedatefile:
             with open(writedatefile,'w') as datefilef:
-                t.printTiplabels(root[0], file=datefilef)
+                t.printTiplabels(t.root, file=datefilef)
                 
         if not json:
-            t.myprint(root[0],file=thetree)
-            thetree.write(f":0.0;{nl}")
+            t.myprint(t.root,file=thetree)
+            thetree.write(f";{nl}")
         else:
             buffer = io.StringIO()
-            t.myprint(root[0],file=buffer)
-            buffer.write(f":0.0;")
+            t.myprint(t.root,file=buffer)
+            buffer.write(f";")
             newick = buffer.getvalue()
             mmt = mm.mmtree()
             pairlist = []

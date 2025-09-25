@@ -120,7 +120,8 @@ class mmtree(Tree):
             print(f"pair={pair[0].name}-{pair[1].name}", end=' ')
             pop1 = int(pair[0].name.split('_')[0])
             pop2 = int(pair[1].name.split('_')[0])
-            interelement = pop2 - pop1
+            #interelement = pop2 - pop1
+            interelement = (pop1,pop2)
             #pair[0].debugprint()
             numEdgePath, LengthPath, age  = self.Root_MRCA(self.root, pair[0], pair[1])
             a.append(age)

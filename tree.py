@@ -61,13 +61,38 @@ def getName(s):
     return j,name
 
 
-
-def istip(p):
-    if((p.left == -1) & (p.right == -1) & (p.name != "root")):
-        return True
+def istip(p, ignore_root=False):
+    if ignore_root:
+        return ((p.left == -1) & (p.right == -1))
     else:
-        return False
+        return (((p.left == -1) & (p.right == -1)) & (p.name != "root"))
 
+def compute_blengths_from_ages(p):
+    if p.ancestor != -1:
+        p.blength = p.ancestor.age - p.age
+    if p.left != -1:
+        compute_blengths_from_ages(p.left)
+    if p.right != -1:
+        compute_blengths_from_ages(p.right)
+    
+def set_age1(p,age):
+    p.age = age
+    highest_age = p.age
+    if not istip(p,True):
+        h = set_age1(p.left,p.age+p.left.blength)
+        if h>highest_age:
+            highest_age = h
+        h = set_age1(p.right,p.age+p.right.blength)
+        if h>highest_age:
+            highest_age = h
+    return highest_age
+
+def reset_age1(p,age):
+    p.age = abs(p.age - age)
+    #print(p.age)
+    if not istip(p,True):
+        reset_age1(p.left,age)
+        reset_age1(p.right,age)
 
 class Node:
     """
@@ -225,8 +250,8 @@ class Tree(Node):
     i = 0
     
     
-    def __init__(self):
-        self.root = Node()
+    def __init__(self,root=Node()):
+        self.root = root
         self.root.name = "root"
         self.root.blength = 0.0
         ##### self.Q, self.basefreqs = like.JukesCantor()
@@ -393,6 +418,10 @@ class Tree(Node):
                     sys.exit()
             p.sequence = like.tipCondLikelihood(sequences[pos])
 
+    def set_age(self):
+        print(self.root)
+        highest_age = set_age1(self.root,0.0)
+        reset_age1(self.root,highest_age)
 
     def condLikelihood(self,p):
         if not(istip(p)):
